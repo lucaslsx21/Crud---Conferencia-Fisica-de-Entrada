@@ -70,7 +70,10 @@ WSGI_APPLICATION = 'sistema_rec.wsgi.application'
 # 🗄️ BANCO DE DADOS (RENDER)
 # =========================
 DATABASES = {
-    'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
+    'default': dj_database_url.config(
+        default='sqlite:///' + str(BASE_DIR / 'db.sqlite3'),
+        conn_max_age=600
+    )
 }
 
 
