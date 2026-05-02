@@ -1,0 +1,302 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Movimentação</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+
+    <style>
+        body {
+            font-size: 14px;
+            background: #f4f6f9;
+        }
+
+        .card {
+            border-radius: 8px;
+            border: none;
+        }
+
+        .section-title {
+            font-weight: 700;
+            font-size: 16px;
+            color: #333;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+
+        label {
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 3px;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            font-size: 13px;
+            height: 34px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            padding: 4px 8px;
+        }
+
+        textarea {
+            height: 70px !important;
+        }
+
+        input[type="checkbox"] {
+            width: auto;
+            height: auto;
+            transform: scale(1.2);
+            margin-right: 5px;
+        }
+
+        .table {
+            background: #fff;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .table thead {
+            background: #343a40;
+            color: #fff;
+            font-size: 12px;
+        }
+
+        .table td {
+            padding: 5px !important;
+            vertical-align: middle;
+        }
+
+        .table td input,
+        .table td select {
+            height: 30px;
+            font-size: 12px;
+        }
+
+        .btn-delete {
+            padding: 2px 6px;
+            font-size: 12px;
+        }
+
+        .box-visto {
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 12px;
+            background: #fff;
+            text-align: center;
+        }
+
+        .form-row>div {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container mt-4">
+        <div class="card shadow p-4">
+
+            <h4 class="mb-4 font-weight-bold">📦 Movimentação</h4>
+
+            <form method="post">
+                {% csrf_token %}
+
+                <!-- ===== DADOS DA NOTA ===== -->
+                <div class="section-title">Dados da Nota</div>
+
+                <div class="form-row">
+                    <div class="col-md-2">
+                        <label>Data</label>
+                        {{ form.data }}
+                    </div>
+
+                    <div class="col-md-2">
+                        <label>NF</label>
+                        {{ form.nf }}
+                    </div>
+
+                    <div class="col-md-2">
+                        <label>CFOP</label>
+                        {{ form.cfop }}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label>Fornecedor</label>
+                        {{ form.fornecedor }}
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="col-md-4">
+                        <label>Tipo</label>
+                        {{ form.tipo }}
+                    </div>
+
+                    <div class="col-md-4">
+                        <label>Local de Entrega</label>
+                        {{ form.local }}
+                    </div>
+
+                    <div class="col-md-4">
+                        <label>Placa</label>
+                        {{ form.placa }}
+                    </div>
+                </div>
+
+                <!-- ===== OBS ===== -->
+                <div class="section-title">Observações</div>
+                <div class="form-group">
+                    {{ form.obs }}
+                </div>
+
+                <!-- ===== ITENS ===== -->
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div class="section-title m-0">Itens</div>
+
+                    <button type="button" class="btn btn-success btn-sm" onclick="addForm()">
+                        ➕ Adicionar
+                    </button>
+                </div>
+
+                {{ formset.management_form }}
+
+                <table class="table table-bordered table-sm">
+                    <thead class="text-center">
+                        <tr>
+                            <th>Material</th>
+                            <th>Descrição</th>
+                            <th style="width:80px">UN</th>
+                            <th style="width:90px">Qtd</th>
+                            <th style="width:80px">Div</th>
+                            <th style="width:60px"></th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="itens-body">
+                        {% for form in formset %}
+                        <tr>
+                            {% for hidden in form.hidden_fields %}
+                            {{ hidden }}
+                            {% endfor %}
+                            <td>{{ form.material }}</td>
+                            <td>{{ form.descricao }}</td>
+                            <td>{{ form.unidade }}</td>
+                            <td>{{ form.quantidade }}</td>
+                            <td>{{ form.div }}</td>
+                            <td class="text-center">
+                                {{ form.DELETE }}
+                                <button type="button" class="btn btn-danger btn-delete" onclick="removerLinha(this)">
+                                    🗑
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">
+                                Nenhum item adicionado
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <!-- TEMPLATE OCULTO -->
+                <table style="display:none;">
+                    <tbody id="empty-form">
+                        {% for hidden in formset.empty_form.hidden_fields %}
+                        {{ hidden }}
+                        {% endfor %}
+                        <tr>
+                            <td>{{ formset.empty_form.material }}</td>
+                            <td>{{ formset.empty_form.descricao }}</td>
+                            <td>{{ formset.empty_form.unidade }}</td>
+                            <td>{{ formset.empty_form.quantidade }}</td>
+                            <td>{{ formset.empty_form.div }}</td>
+                            <td class="text-center">
+                                {{ formset.empty_form.DELETE }}
+                                <button type="button" class="btn btn-danger btn-sm" onclick="removerLinha(this)">
+                                    🗑
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- ===== VISTOS ===== -->
+                <div class="section-title">Vistos</div>
+
+                <div class="form-row">
+                    <div class="col-md-6">
+                        <div class="box-visto">
+                            <label>{{ form.visto_patio }} Visto do Pátio</label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="box-visto">
+                            <label>{{ form.visto_conferente }} Visto do Conferente</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BOTÕES -->
+                <div class="text-right mt-4">
+                    <a href="{% url 'home' %}" class="btn btn-secondary btn-sm">Cancelar</a>
+                    <button type="submit" class="btn btn-primary btn-sm">Salvar</button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function addForm() {
+
+            let totalForms = document.querySelector('[name$="-TOTAL_FORMS"]');
+
+            if (!totalForms) {
+                alert("Erro: management_form não encontrado.");
+                return;
+            }
+
+            let formNum = parseInt(totalForms.value);
+            let emptyForm = document.getElementById('empty-form');
+
+            if (!emptyForm) {
+                alert("Erro: template vazio não encontrado.");
+                return;
+            }
+
+            let newRowHtml = emptyForm.innerHTML.replace(/__prefix__/g, formNum);
+            let tableBody = document.getElementById('itens-body');
+
+            let emptyRow = tableBody.querySelector('.text-muted');
+            if (emptyRow) emptyRow.closest('tr').remove();
+
+            tableBody.insertAdjacentHTML('beforeend', newRowHtml);
+
+            totalForms.value = formNum + 1;
+        }
+
+        function removerLinha(btn) {
+            let row = btn.closest("tr");
+            let checkbox = row.querySelector("input[type='checkbox']");
+
+            if (checkbox) {
+                checkbox.checked = true;
+                row.style.display = "none";
+            } else {
+                row.remove();
+            }
+        }
+    </script>
+
+</body>
+
+</html>

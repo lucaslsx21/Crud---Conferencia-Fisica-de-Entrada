@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<style>
+    .doc {
+        background: #fff;
+        padding: 20px;
+        border: 1px solid #ccc;
+        margin-bottom: 30px;
+    }
+
+    .titulo {
+        text-align: center;
+        font-weight: bold;
+    }
+
+    .linha {
+        border-bottom: 1px solid #000;
+        margin: 10px 0;
+    }
+
+    .info {
+        display: flex;
+        justify-content: space-between;
+        font-size: 14px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+    }
+
+    table,
+    th,
+    td {
+        border: 1px solid #000;
+    }
+
+    th,
+    td {
+        padding: 6px;
+        font-size: 13px;
+    }
+
+    th {
+        background: #eee;
+    }
+</style>
+
+{% for nf, grupo in agrupado.items %}
+
+<div class="doc">
+
+    <!-- ===== CABEÇALHO ===== -->
+    <div class="titulo">
+        <h4>PRYSMIAN CABOS SISTEMAS DO BRASIL</h4>
+        <h5>CONFERÊNCIA DE ENTRADA DE MATERIAL</h5>
+    </div>
+
+    <div class="linha"></div>
+
+    <!-- ===== INFORMAÇÕES ===== -->
+    <div class="info">
+        <div><strong>NF:</strong> {{ nf }}</div>
+        <div><strong>Data:</strong> {{ grupo.data }}</div>
+    </div>
+
+    <div class="info">
+        <div><strong>Fornecedor:</strong> {{ grupo.fornecedor }}</div>
+    </div>
+
+    <div class="linha"></div>
+
+    <!-- ===== TABELA ===== -->
+    <table>
+        <thead>
+            <tr>
+                <th>ITEM</th>
+                <th>MATERIAL</th>
+                <th>DESCRIÇÃO</th>
+                <th>UN</th>
+                <th>QUANTIDADE</th>
+                <th>DIV</th>
+                <th style="width: 40px;"></th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for mov in grupo.movs %}
+            {% for item in mov.itens.all|dictsort:"numero" %}
+            <tr>
+                <td>
+                    {% if item.numero %}
+                    {{ item.numero|stringformat:"05d" }}
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+                <td>{{ item.material }}</td>
+                <td>{{ item.descricao }}</td>
+                <td>{{ item.unidade }}</td>
+                <td>{{ item.quantidade }}</td>
+                <td>{{ item.div }}</td>
+                <td style="text-align: center;">
+                    <a href="{% url 'excluir_item' item.id %}" class="btn btn-danger btn-sm" style="padding: 2px 6px;"
+                        onclick="return confirm('Deseja excluir este item?')">
+                        🗑
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <!-- ⚠️ AJUSTADO AQUI -->
+                <td colspan="7" class="text-center">Nenhum item</td>
+            </tr>
+            {% endfor %}
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- ===== BOTÕES ===== -->
+    <div style="margin-top: 15px;">
+        <a href="{% url 'pdf_nf' nf %}" class="btn btn-sm btn-danger">PDF</a>
+        <a href="{% url 'editar' grupo.movs.0.id %}" class="btn btn-sm btn-warning">Editar</a>
+        <a href="{% url 'excluir_nf' nf %}" class="btn btn-sm btn-dark">Excluir</a>
+    </div>
+
+</div>
+
+{% endfor %}
+
+{% endblock %}
