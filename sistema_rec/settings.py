@@ -12,7 +12,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-dev-only')
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['.onrender.com']  # depois pode colocar domínio próprio
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']  # depois pode colocar domínio próprio
 
 
 # =========================
